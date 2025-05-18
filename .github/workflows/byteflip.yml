@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -21,13 +21,41 @@ jobs:
           ref: build
 
       - name: CMake
-        run: cmake -S . -B build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Compile
-        run: cmake --build build
+        run: cmake --build build --config Release
 
-      - name: Upload
+      - name: Prepare package folder
+        run: |
+          mkdir dist
+          mkdir dist/byteflip
+
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cp build/Release/byteflip.exe dist/byteflip/byteflip.exe
+          else
+            cp build/byteflip dist/byteflip/byteflip
+            chmod +x dist/byteflip/byteflip
+          fi
+
+          cp LICENSE dist/byteflip/
+          cp README.md dist/byteflip/
+
+      - name: Compress artifacts
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            powershell -Command "Compress-Archive -Path dist/byteflip/* -DestinationPath byteflip-windows.zip"
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            tar -czvf byteflip-linux.tar.gz -C dist byteflip
+          else
+            tar -czvf byteflip-macos.tar.gz -C dist byteflip
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binarios-${{ matrix.os }}
-          path: build/
+          name: byteflip-${{ matrix.os }}
+          path: |
+            byteflip-windows.zip
+            byteflip-linux.tar.gz
+            byteflip-macos.tar.gz
