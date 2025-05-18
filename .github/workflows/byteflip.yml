@@ -1,0 +1,25 @@
+name: Build Cross-platform
+
+on:
+  push:
+    branches: [build]
+  pull_request:
+    branches: [build]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: CMake
+        run: cmake -S . -B build
+
+      - name: Compile
+        run: cmake --build build
