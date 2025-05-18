@@ -17,9 +17,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: build
+
+      - name: List files (debug)
+        run: ls -lR
 
       - name: CMake
         run: cmake -S . -B build
 
       - name: Compile
         run: cmake --build build
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: binarios-${{ matrix.os }}
+          path: build/
