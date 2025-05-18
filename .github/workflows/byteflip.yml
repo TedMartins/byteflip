@@ -20,9 +20,6 @@ jobs:
         with:
           ref: build
 
-      - name: List files (debug)
-        run: ls -lR
-
       - name: CMake
         run: cmake -S . -B build
 
